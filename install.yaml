@@ -20,13 +20,14 @@ spec:
       default: .
   steps:
   - name: install
-    image: openshift/nodejs-12:latest
+    image: quay.io/smileyfritz/ubi-npm:latest
     command:
     - /usr/bin/npm
     args:
     - install
+    workingDir: $(workspaces.output.path)
   - name: build
-    image: openshift/nodejs-12:latest
+    image: quay.io/smileyfritz/ubi-npm:latest
     command:
     - /usr/bin/npm
     args:
@@ -34,7 +35,7 @@ spec:
     - build
     workingDir: $(workspaces.output.path)
   - name: build-image
-    image: registry.access.redhat.com/rhel8/buildah
+    image: registry.redhat.io/rhel8/buildah
     command:
         - buildah
         - bud
@@ -50,14 +51,23 @@ spec:
     securityContext:
       privileged: true
     workingDir: $(workspaces.output.path)
+    volumeMounts:
+      - mountPath: /var/lib/containers
+        name: varlibcontainers
   - name: push-image
     command:
       - buildah
       - push
       - '--tls-verify=$(params.TLSVERIFY)'
       - '$(params.IMAGE)'
-    image: registry.access.redhat.com/rhel8/buildah
+    image: registry.redhat.io/rhel8/buildah
     resources: {}
     securityContext:
       privileged: true
     workingDir: $(workspaces.output.path)
+    volumeMounts:
+      - mountPath: /var/lib/containers
+        name: varlibcontainers
+  volumes:
+    - name: varlibcontainers
+      emptyDir: {}

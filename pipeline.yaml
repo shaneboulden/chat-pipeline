@@ -14,6 +14,9 @@ spec:
       default: https://github.com/shaneboulden/chat-client.git
     - name: context-dir
       type: string
+    - name: is-name
+      type: string
+      default: chat-client
   workspaces:
     - name: source
   tasks:
@@ -39,3 +42,14 @@ spec:
     workspaces:
       - name: output
         workspace: source
+  - name: rollout-latest-image
+    taskRef: 
+      name: openshift-client
+      kind: ClusterTask
+    params:
+      - name: ARGS
+        value:
+          - import-image
+          - $(params.is-name):latest
+    runAfter:
+      - build-image-from-source
