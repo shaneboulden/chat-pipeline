@@ -1,0 +1,63 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: react-build
+spec:
+  workspaces:
+    - name: output
+  params:
+    - name: TLSVERIFY
+      type: string
+      default: 'true'
+    - name: IMAGE
+      type: string
+      default: 'quay.io/smileyfritz/chat-client'
+    - name: DOCKERFILE
+      type: string
+      default: ./Dockerfile
+    - name: CONTEXT
+      type: string
+      default: .
+  steps:
+  - name: install
+    image: openshift/nodejs-12:latest
+    command:
+    - /usr/bin/npm
+    args:
+    - install
+  - name: build
+    image: openshift/nodejs-12:latest
+    command:
+    - /usr/bin/npm
+    args:
+    - run-script
+    - build
+    workingDir: $(workspaces.output.path)
+  - name: build-image
+    image: registry.access.redhat.com/rhel8/buildah
+    command:
+        - buildah
+        - bud
+        - '--format=oci'
+        - '--tls-verify=$(params.TLSVERIFY)'
+        - '--layers'
+        - '-f'
+        - $(params.DOCKERFILE)
+        - '-t'
+        - $(params.IMAGE)
+        - $(params.CONTEXT)
+    resources: {}
+    securityContext:
+      privileged: true
+    workingDir: $(workspaces.output.path)
+  - name: push-image
+    command:
+      - buildah
+      - push
+      - '--tls-verify=$(params.TLSVERIFY)'
+      - '$(params.IMAGE)'
+    image: registry.access.redhat.com/rhel8/buildah
+    resources: {}
+    securityContext:
+      privileged: true
+    workingDir: $(workspaces.output.path)
