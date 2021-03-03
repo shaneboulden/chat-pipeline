@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: react-pipelinerun
+spec:
+  params: 
+    - name: "github-repo-revision"
+      value: "main"
+    - name: "github-repo-url"
+      value: "https://github.com/shaneboulden/chat-client.git"
+    - name: "context-dir"
+      value: "/"
+    - name: "image-name" 
+      value: "quay.io/smileyfritz/chat-client:latest"
+    - name: "is-name"
+      value: "chat-client"
+  pipelineRef:
+    name: build-and-deploy
+  serviceAccountName: pipeline-svc
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: pipeline-pvc
