@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: xccdf-scan
+spec:
+  workspaces:
+    - name: output
+  steps:
+  - name: oscap-xccdf-scan
+    image: quay.io/smileyfritz/scap-scan:latest
+    command: 
+      - oscap
+      - xccdf
+      - eval
+      - --profile
+      - xccdf_org.ssgproject.content_profile_e8_ubi
+      - --tailoring-file
+      - /opt/scap/tailoring-xccdf.xml
+      - /usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml
+    resources: {}
