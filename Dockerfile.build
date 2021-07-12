@@ -1,2 +1,0 @@
-FROM registry.redhat.io/ubi8/ubi
-RUN yum module install -y nodejs:12

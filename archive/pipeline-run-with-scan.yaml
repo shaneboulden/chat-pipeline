@@ -15,17 +15,9 @@ spec:
     - name: "is-name"
       value: "chat-client"
   pipelineRef:
-    name: build-and-deploy
-  podTemplate:
-      securityContext:
-        runAsUser: 0
-        fsGroup: 0
-      volumes:
-        - name: varlibcontainers
-          persistentVolumeClaim:
-            claimName: containers-pvc2
+    name: build-scan-and-deploy
   serviceAccountName: pipeline-svc
   workspaces:
     - name: source
       persistentVolumeClaim:
-        claimName: pipeline-pvc1
+        claimName: pipeline-pvc

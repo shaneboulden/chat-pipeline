@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: react-build
+spec:
+  workspaces:
+    - name: output
+  params:
+    - name: TLSVERIFY
+      type: string
+      default: 'true'
+    - name: IMAGE
+      type: string
+      default: 'quay.io/smileyfritz/chat-client'
+    - name: DOCKERFILE
+      type: string
+      default: ./Dockerfile
+    - name: CONTEXT
+      type: string
+      default: .
+  steps:
+  - name: install
+    image: quay.io/smileyfritz/ubi-npm:latest
+    command:
+    - /usr/bin/npm
+    args:
+    - install
+    workingDir: $(workspaces.output.path)
+  - name: build
+    image: quay.io/smileyfritz/ubi-npm:latest
+    command:
+    - /usr/bin/npm
+    args:
+    - run-script
+    - build
+    workingDir: $(workspaces.output.path)

@@ -34,7 +34,7 @@ spec:
     workspaces:
       - name: output
         workspace: source
-  - name: build-image-from-source
+  - name: build-from-source
     taskRef: 
       name: react-build
     runAfter: 
@@ -42,6 +42,21 @@ spec:
     workspaces:
       - name: output
         workspace: source
+  - name: build-image
+    taskRef: 
+      name: buildah-with-vols
+    params:
+      - name: IMAGE
+        value: 'quay.io/smileyfritz/chat-client'
+      - name: CONTEXT
+        value: '.'
+      - name: TLSVERIFY
+        value: 'false'
+    workspaces:
+      - name: source
+        workspace: source
+    runAfter: 
+      - build-from-source
   - name: rollout-latest-image
     taskRef: 
       name: openshift-client
@@ -52,4 +67,4 @@ spec:
           - import-image
           - $(params.is-name):latest
     runAfter:
-      - build-image-from-source
+      - build-image
