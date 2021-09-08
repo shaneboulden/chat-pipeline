@@ -4,3 +4,4 @@ metadata:
   name: pipeline-svc
 secrets:
   - name: regcred
+  - name: acstoken

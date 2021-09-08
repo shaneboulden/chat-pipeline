@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: build-and-deploy
+  name: build-scan-and-deploy
 spec:
   params:
     - name: github-repo-revision
@@ -17,6 +17,11 @@ spec:
     - name: is-name
       type: string
       default: chat-client
+    - name: acs-image
+      type: string
+      default: 'registry.redhat.io/rh-acs/roxctl:3.0.62.0'
+    - name: acs-scan-api
+      type: string
   workspaces:
     - name: source
   tasks:
@@ -35,9 +40,9 @@ spec:
       - name: output
         workspace: source
   - name: build-from-source
-    taskRef:
+    taskRef: 
       name: react-build
-    runAfter:
+    runAfter: 
     - clone-sources
     workspaces:
       - name: output
@@ -57,6 +62,16 @@ spec:
         workspace: source
     runAfter: 
       - build-from-source
+  - name: scan-image
+    taskRef:
+      name: scan-image-acs
+    params:
+      - name: IMAGE
+        value: '$(params.acs-image)'
+      - name: ACS_CENTRAL
+        value: '$(params.acs-scan-api)'
+    runAfter:
+      - build-image
   - name: rollout-latest-image
     taskRef: 
       name: openshift-client
@@ -67,4 +82,4 @@ spec:
           - import-image
           - $(params.is-name):latest
     runAfter:
-      - build-image
+      - scan-image
