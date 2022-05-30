@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: containers-pvc2
+  name: containers-pvc
 spec:
   resources:
     requests:

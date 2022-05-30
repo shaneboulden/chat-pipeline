@@ -1,5 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
+imagePullSecrets:
+- name: regcred
 metadata:
   name: pipeline-svc
 secrets:

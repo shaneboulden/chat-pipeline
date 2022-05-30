@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: react-scan-pipelinerun
+  generateName: cosign-pipelinerun
 spec:
   params: 
     - name: "github-repo-revision"
@@ -14,12 +14,8 @@ spec:
       value: "quay.io/smileyfritz/chat-client:latest"
     - name: "is-name"
       value: "chat-client"
-    - name: "acs-image"
-      value: "quay.io/smileyfritz/chat-client:latest"
-    - name: "acs-scan-api"
-      value: "central-stackrox.apps.cluster-n9jcv.n9jcv.sandbox1356.opentlc.com"
   pipelineRef:
-    name: build-scan-and-deploy
+    name: build-and-sign
   podTemplate:
       securityContext:
         runAsUser: 0
