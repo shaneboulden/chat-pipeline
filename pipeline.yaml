@@ -14,6 +14,8 @@ spec:
       default: https://github.com/shaneboulden/chat-client.git
     - name: context-dir
       type: string
+    - name: image-name
+      type: string
     - name: is-name
       type: string
       default: chat-client
@@ -47,7 +49,7 @@ spec:
       name: buildah-with-vols
     params:
       - name: IMAGE
-        value: 'quay.io/smileyfritz/chat-client'
+        value: '$(params.image-name)'
       - name: CONTEXT
         value: '.'
       - name: TLSVERIFY
