@@ -47,9 +47,9 @@ spec:
     workspaces:
       - name: output
         workspace: source
-  - name: build-image
+  - name: build-and-scan-image
     taskRef: 
-      name: buildah-with-vols
+      name: build-and-scan
     params:
       - name: IMAGE
         value: 'quay.io/smileyfritz/chat-client'
@@ -57,21 +57,13 @@ spec:
         value: '.'
       - name: TLSVERIFY
         value: 'false'
+      - name: ACS_CENTRAL
+        value: '$(params.acs-scan-api)'
     workspaces:
       - name: source
         workspace: source
     runAfter: 
       - build-from-source
-  - name: scan-image
-    taskRef:
-      name: scan-image-acs
-    params:
-      - name: IMAGE
-        value: '$(params.acs-image)'
-      - name: ACS_CENTRAL
-        value: '$(params.acs-scan-api)'
-    runAfter:
-      - build-image
   - name: rollout-latest-image
     taskRef: 
       name: openshift-client
@@ -81,4 +73,4 @@ spec:
         value: |
           oc import-image $(params.is-name):latest
     runAfter:
-      - scan-image
+      - build-and-scan-image

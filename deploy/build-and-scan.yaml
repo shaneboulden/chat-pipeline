@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: buildah-with-vols
+  name: build-and-scan
   labels:
     app.kubernetes.io/version: "0.1"
   annotations:
@@ -23,6 +23,14 @@ spec:
   - name: BUILDER_IMAGE
     description: The location of the buildah builder image.
     default: quay.io/buildah/stable:v1.17.0
+  - name: SCAN_IMAGE
+    description: Image containing the roxctl CLI
+    default: quay.io/smileyfritz/roxctl:latest
+  - name: TLS_VERIFY
+    description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+    default: "true"
+  - name: ACS_CENTRAL
+    description: The end-point for the ACS API
   - name: STORAGE_DRIVER
     description: Set buildah storage driver
     default: overlay
@@ -82,6 +90,17 @@ spec:
       mountPath: /var/lib/containers
     securityContext:
       privileged: true
+
+  - name: scan
+    image: $(params.SCAN_IMAGE)
+    env:
+      - name: ROX_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: acstoken
+            key: token
+    script: |
+      /usr/bin/roxctl --insecure-skip-tls-verify=$(params.TLS_VERIFY) -e $(params.ACS_CENTRAL):443 image check --image=$(params.IMAGE)
 
   - name: digest-to-results
     image: $(params.BUILDER_IMAGE)

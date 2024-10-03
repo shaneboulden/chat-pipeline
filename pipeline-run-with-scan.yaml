@@ -17,7 +17,7 @@ spec:
     - name: "acs-image"
       value: "quay.io/smileyfritz/chat-client:latest"
     - name: "acs-scan-api"
-      value: "central-acs-central.apps.cluster1.sandbox2533.opentlc.com"
+      value: "central-acs-central.apps.lab8.openshift.blueradish.net"
   pipelineRef:
     name: build-scan-and-deploy
   podTemplate:
