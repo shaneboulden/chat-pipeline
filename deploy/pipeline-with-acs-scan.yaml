@@ -28,7 +28,7 @@ spec:
   - name: clone-sources
     taskRef:
       name: git-clone
-      kind: ClusterTask
+      kind: Task
     params:
       - name: url
         value: '$(params.github-repo-url)'
@@ -67,7 +67,7 @@ spec:
   - name: rollout-latest-image
     taskRef: 
       name: openshift-client
-      kind: ClusterTask
+      kind: Task
     params:
       - name: SCRIPT
         value: |
