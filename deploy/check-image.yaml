@@ -1,0 +1,42 @@
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-image
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: check-image
+spec:
+  description: >-
+    Task that checks an image against RHACS policies
+  params:
+  - name: IMAGE
+    description: Reference of the image buildah will produce.
+  - name: SCAN_IMAGE
+    description: Image containing the roxctl CLI
+    default: quay.io/smileyfritz/roxctl:latest
+  - name: TLS_VERIFY
+    description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+    default: "true"
+  - name: ACS_CENTRAL
+    description: The end-point for the ACS API
+  - name: TLSVERIFY
+    description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+    default: "true"
+  workspaces:
+  - name: source
+
+  steps:
+    - name: check
+      image: $(params.SCAN_IMAGE)
+      env:
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: acstoken
+              key: token
+      script: |
+        roxctl --insecure-skip-tls-verify=$(params.TLS_VERIFY) -e $(params.ACS_CENTRAL):443 image check --image=$(params.IMAGE)

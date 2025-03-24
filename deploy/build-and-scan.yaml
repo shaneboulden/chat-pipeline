@@ -25,7 +25,7 @@ spec:
     default: quay.io/buildah/stable:v1.17.0
   - name: SCAN_IMAGE
     description: Image containing the roxctl CLI
-    default: quay.io/smileyfritz/roxctl:latest
+    default: quay.io/smileyfritz/ubi-build:v0.1.0
   - name: TLS_VERIFY
     description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
     default: "true"
@@ -55,12 +55,13 @@ spec:
     default: ""
   workspaces:
   - name: source
-
   results:
   - name: IMAGE_DIGEST
     description: Digest of the image just built.
   - name: IMAGE_URL
     description: Name of the image just built.
+  - name: SCAN_OUTPUT
+    description: Vulnerabilities for the created image
 
   steps:
   - name: build
@@ -100,7 +101,11 @@ spec:
             name: acstoken
             key: token
     script: |
-      /usr/bin/roxctl --insecure-skip-tls-verify=$(params.TLS_VERIFY) -e $(params.ACS_CENTRAL):443 image check --image=$(params.IMAGE)
+      curl -s -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$(params.ACS_CENTRAL)/api/cli/download/roxctl-linux --output ./roxctl
+      chmod +x ./roxctl
+      ./roxctl --insecure-skip-tls-verify=$(params.TLS_VERIFY) -e $(params.ACS_CENTRAL):443 image scan --image=$(params.IMAGE) --output json  > roxctl_output.json
+      jq -rce \
+      "{vulnerabilities:{ critical: (.result.summary.CRITICAL), high: (.result.summary.IMPORTANT), medium: (.result.summary.MODERATE), low: (.result.summary.LOW) }}" roxctl_output.json | tee  $(results.SCAN_OUTPUT.path)
 
   - name: digest-to-results
     image: $(params.BUILDER_IMAGE)
